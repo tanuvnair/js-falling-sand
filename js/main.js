@@ -26,9 +26,23 @@ function drawGrid() {
 function applyGravity() {
   for (let row = ROWS - 2; row >= 0; row--) {
     for (let col = 0; col < COLS; col++) {
-      if (GRID[row][col] === 1 && GRID[row + 1][col] === 0) {
-        GRID[row + 1][col] = 1;
-        GRID[row][col] = 0;
+      let state = GRID[row][col];
+
+      if (state === 1) {
+        let below = GRID[row + 1][col];
+        let belowL = GRID[row + 1][col - 1];
+        let belowR = GRID[row + 1][col + 1];
+
+        if (below === 0) {
+          GRID[row + 1][col] = 1;
+          GRID[row][col] = 0;
+        } else if (belowR === 0) {
+          GRID[row][col + 1] = 1;
+          GRID[row][col] = 0;
+        } else if (belowL === 0) {
+          GRID[row][col - 1] = 1;
+          GRID[row][col] = 0;
+        }
       }
     }
   }
@@ -79,9 +93,8 @@ window.addEventListener("resize", () => {
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  applyGravity();
   drawGrid();
+  applyGravity();
   requestAnimationFrame(animate);
 }
-
 animate();
