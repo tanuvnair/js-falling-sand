@@ -14,10 +14,10 @@ for (let i = 0; i < ROWS; i++) {
 
 let HUE_VALUE = 1;
 
-function drawGrid() {
+function draw() {
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
-      ctx.fillStyle = GRID[i][j] > 0 ? `hsl(${HUE_VALUE}, 100%, 50%)` : "black";
+      ctx.fillStyle = GRID[i][j] > 0 ? `hsl(${GRID[i][j]}, 100%, 50%)` : "black";
       ctx.fillRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
   }
@@ -72,7 +72,10 @@ function paintTile(event) {
     }
   }
 
-  HUE_VALUE += 10;
+  HUE_VALUE += 1;
+  if (HUE_VALUE > 360) {
+    HUE_VALUE = 1;
+  }
 }
 
 let isDragging = false;
@@ -115,7 +118,7 @@ window.addEventListener("resize", () => {
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawGrid();
+  draw();
   applyGravity();
   requestAnimationFrame(animate);
 }
