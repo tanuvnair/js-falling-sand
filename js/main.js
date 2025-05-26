@@ -24,28 +24,30 @@ function drawGrid() {
 }
 
 function applyGravity() {
+  let nextGrid = JSON.parse(JSON.stringify(GRID));
+
   for (let row = ROWS - 2; row >= 0; row--) {
     for (let col = 0; col < COLS; col++) {
-      let state = GRID[row][col];
+      let current = GRID[row][col];
+      if (current !== 1) continue;
 
-      if (state === 1) {
-        let below = GRID[row + 1][col];
-        let belowL = GRID[row + 1][col - 1];
-        let belowR = GRID[row + 1][col + 1];
+      let below = GRID[row + 1][col];
+      if (below === 0) {
+        nextGrid[row + 1][col] = 1;
+        nextGrid[row][col] = 0;
+      } else {
+        let dir = Math.random() < 0.5 ? -1 : 1;
+        let diag = col + dir;
 
-        if (below === 0) {
-          GRID[row + 1][col] = 1;
-          GRID[row][col] = 0;
-        } else if (belowR === 0) {
-          GRID[row][col + 1] = 1;
-          GRID[row][col] = 0;
-        } else if (belowL === 0) {
-          GRID[row][col - 1] = 1;
-          GRID[row][col] = 0;
+        if (diag >= 0 && diag < COLS && GRID[row + 1][diag] === 0) {
+          nextGrid[row + 1][diag] = 1;
+          nextGrid[row][col] = 0;
         }
       }
     }
   }
+
+  GRID = nextGrid;
 }
 
 function paintTile(event) {
