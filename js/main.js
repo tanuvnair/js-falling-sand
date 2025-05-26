@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const CELL_SIZE = 25;
+const CELL_SIZE = 10;
 let ROWS = Math.floor(canvas.height / CELL_SIZE);
 let COLS = Math.floor(canvas.width / CELL_SIZE);
 
@@ -12,13 +12,13 @@ for (let i = 0; i < ROWS; i++) {
   GRID[i] = new Array(COLS).fill(0);
 }
 
+let HUE_VALUE = 1;
+
 function drawGrid() {
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
-      ctx.fillStyle = GRID[i][j] === 1 ? "white" : "black";
+      ctx.fillStyle = GRID[i][j] > 0 ? `hsl(${HUE_VALUE}, 100%, 50%)` : "black";
       ctx.fillRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-      ctx.strokeStyle = "gray";
-      ctx.strokeRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
   }
 }
@@ -29,18 +29,18 @@ function applyGravity() {
   for (let row = ROWS - 2; row >= 0; row--) {
     for (let col = 0; col < COLS; col++) {
       let current = GRID[row][col];
-      if (current !== 1) continue;
+      if (current === 0) continue;
 
       let below = GRID[row + 1][col];
       if (below === 0) {
-        nextGrid[row + 1][col] = 1;
+        nextGrid[row + 1][col] = GRID[row][col];
         nextGrid[row][col] = 0;
       } else {
         let dir = Math.random() < 0.5 ? -1 : 1;
         let diag = col + dir;
 
         if (diag >= 0 && diag < COLS && GRID[row + 1][diag] === 0) {
-          nextGrid[row + 1][diag] = 1;
+          nextGrid[row + 1][diag] = GRID[row][col];
           nextGrid[row][col] = 0;
         }
       }
@@ -54,12 +54,25 @@ function paintTile(event) {
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
-  const col = Math.floor(mouseX / CELL_SIZE);
-  const row = Math.floor(mouseY / CELL_SIZE);
+  const mouseRow = Math.floor(mouseY / CELL_SIZE);
+  const mouseCol = Math.floor(mouseX / CELL_SIZE);
 
-  if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
-    GRID[row][col] = 1;
+  let BRUSH_SIZE = 3;
+  let extent = Math.floor(BRUSH_SIZE / 2);
+  for (let i = -extent; i <= extent; i++) {
+    for (let j = -extent; j <= extent; j++) {
+      if (Math.random() < 0.75) {
+        let row = mouseRow + i;
+        let col = mouseCol + j;
+
+        if (row >= 0 && row <= ROWS && col >= 0 && col <= COLS) {
+          GRID[row][col] = HUE_VALUE;
+        }
+      }
+    }
   }
+
+  HUE_VALUE += 10;
 }
 
 let isDragging = false;
@@ -79,6 +92,13 @@ window.addEventListener("mouseup", () => {
 
 canvas.addEventListener("mouseleave", () => {
   isDragging = false;
+});
+
+window.addEventListener("keydown", (event) => {
+  if ((event.key === '+' || (event.key === '=' && event.shiftKey))) {
+    console.log("Plus key pressed");
+    HUE_VALUE += 10;
+  }
 });
 
 window.addEventListener("resize", () => {
